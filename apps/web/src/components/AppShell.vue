@@ -52,6 +52,9 @@ async function handleLogout() {
           <router-link class="shell-nav__item" :class="{ 'is-active': activeNav === 'sites' }" to="/sites">
             地点
           </router-link>
+          <router-link class="shell-nav__item" :class="{ 'is-active': activeNav === 'tasks' }" to="/tasks">
+            待办
+          </router-link>
           <router-link class="shell-nav__item" :class="{ 'is-active': activeNav === 'species' }" to="/species">
             物种
           </router-link>

@@ -167,6 +167,93 @@ export interface ShareLink {
   viewCount: number;
 }
 
+// ── 观察任务 ────────────────────────────────────────────────────────────────
+
+export type TaskStatus = "OPEN" | "DONE" | "CLOSED";
+
+export type TaskEventType =
+  | "CREATED"
+  | "REMINDER_SENT"
+  | "OVERDUE"
+  | "COMPLETED"
+  | "BACKFILLED"
+  | "CLOSED";
+
+export interface TaskRule {
+  id: string;
+  name: string;
+  kind: ObservationKind;
+  windowStartMd: string;
+  windowEndMd: string;
+  dueOffsetDays: number;
+  remindBeforeDays: number;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  site: { id: string; name: string };
+  species: { id: string; commonName: string } | null;
+  phenophase: { id: string; name: string; color: string } | null;
+  taskCount?: number;
+}
+
+export interface TaskEvent {
+  id: string;
+  taskId: string;
+  type: TaskEventType;
+  payload: Record<string, unknown>;
+  occurredAt: string;
+}
+
+export interface ObservationTask {
+  id: string;
+  status: TaskStatus;
+  occurrenceKey: string;
+  windowStart: string;
+  windowEnd: string;
+  dueDate: string;
+  reminderSentAt: string | null;
+  completedAt: string | null;
+  completedDate: string | null;
+  closedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  overdue: boolean;
+  daysUntilDue: number | null;
+  rule: {
+    id: string;
+    name: string;
+    kind: ObservationKind;
+    remindBeforeDays: number;
+    site: { id: string; name: string };
+    species: { id: string; commonName: string } | null;
+    phenophase: { id: string; name: string; color: string } | null;
+  };
+  observation: { id: string; observationDate: string; title: string | null; kind: ObservationKind } | null;
+  events: TaskEvent[];
+}
+
+export interface TaskScanResult {
+  created: number;
+  reminders: number;
+  overdue: number;
+  usersScanned: number;
+}
+
+export const TASK_EVENT_LABELS: Record<TaskEventType, string> = {
+  CREATED: "已生成",
+  REMINDER_SENT: "到期提醒",
+  OVERDUE: "逾期提醒",
+  COMPLETED: "如期完成",
+  BACKFILLED: "补录完成",
+  CLOSED: "已关闭",
+};
+
+export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
+  OPEN: "待办",
+  DONE: "已完成",
+  CLOSED: "已关闭",
+};
+
 export const KIND_LABELS: Record<ObservationKind, string> = {
   PLANT_PHENOLOGY: "树木发芽",
   INSECT_SIGHTING: "昆虫出现",

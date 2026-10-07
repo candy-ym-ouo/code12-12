@@ -426,6 +426,33 @@ async function seedDemoData() {
     });
   }
 
+  // 一条覆盖当前演示日期（10 月上旬）的观察计划，扫描后待办页立即可见
+  await prisma.observationTaskRule.upsert({
+    where: { id: "seed-rule-ginkgo-autumn" },
+    update: {
+      name: "银杏叶始变色观察",
+      windowStartMd: "10-01",
+      windowEndMd: "11-15",
+      dueOffsetDays: 5,
+      remindBeforeDays: 3,
+      active: true,
+    },
+    create: {
+      id: "seed-rule-ginkgo-autumn",
+      ownerId: user.id,
+      siteId: "seed-site-ginkgo",
+      speciesId: ownedGinkgoId,
+      phenophaseId: budding.id,
+      name: "银杏叶始变色观察",
+      kind: "PLANT_PHENOLOGY",
+      windowStartMd: "10-01",
+      windowEndMd: "11-15",
+      dueOffsetDays: 5,
+      remindBeforeDays: 3,
+      active: true,
+    },
+  });
+
   console.log(`演示数据就绪：${user.email} / Nature#2025，${SITES.length} 个地点，${observations.length} 条观测`);
 }
 

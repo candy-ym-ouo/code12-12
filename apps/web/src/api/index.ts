@@ -3,12 +3,16 @@ import type {
   CompareResult,
   Observation,
   ObservationMeta,
+  ObservationTask,
   PhenologyResult,
   Phenophase,
   ShareLink,
   Site,
   Species,
   Tag,
+  TaskEvent,
+  TaskRule,
+  TaskScanResult,
   User,
 } from "@/types/models";
 
@@ -226,6 +230,59 @@ export const shareApi = {
       expiresAt: string;
       observations: Observation[];
     } }>(`/share/${token}`);
+    return data.data;
+  },
+};
+
+export interface TaskListQuery {
+  status?: "OPEN" | "DONE" | "CLOSED" | "ALL" | "OVERDUE";
+  siteId?: string;
+  ruleId?: string;
+  limit?: number;
+}
+
+export const taskApi = {
+  async listRules() {
+    const { data } = await http.get<ApiList<TaskRule>>("/tasks/task-rules");
+    return data.data;
+  },
+  async createRule(payload: Record<string, unknown>) {
+    const { data } = await http.post<{ data: TaskRule }>("/tasks/task-rules", payload);
+    return data.data;
+  },
+  async updateRule(id: string, payload: Record<string, unknown>) {
+    const { data } = await http.patch<{ data: TaskRule }>(`/tasks/task-rules/${id}`, payload);
+    return data.data;
+  },
+  async deleteRule(id: string) {
+    await http.delete(`/tasks/task-rules/${id}`);
+  },
+  async scan() {
+    const { data } = await http.post<{ data: TaskScanResult }>("/tasks/scan", {});
+    return data.data;
+  },
+  async list(query: TaskListQuery = {}) {
+    const { data } = await http.get<ApiList<ObservationTask>>("/tasks", { params: query });
+    return data.data;
+  },
+  async get(id: string) {
+    const { data } = await http.get<{ data: ObservationTask }>(`/tasks/${id}`);
+    return data.data;
+  },
+  async events(id: string, limit = 100) {
+    const { data } = await http.get<ApiList<TaskEvent>>(`/tasks/${id}/events`, { params: { limit } });
+    return data.data;
+  },
+  async history(limit = 100) {
+    const { data } = await http.get<ApiList<TaskEvent>>("/tasks/history", { params: { limit } });
+    return data.data;
+  },
+  async complete(id: string, payload: Record<string, unknown> = {}) {
+    const { data } = await http.post<{ data: ObservationTask }>(`/tasks/${id}/complete`, payload);
+    return data.data;
+  },
+  async close(id: string, reason?: string) {
+    const { data } = await http.post<{ data: ObservationTask }>(`/tasks/${id}/close`, { reason });
     return data.data;
   },
 };

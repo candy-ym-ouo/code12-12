@@ -2,10 +2,13 @@ import { createApp } from "./app";
 import { env } from "./config/env";
 import { logger } from "./lib/logger";
 import { prisma } from "./lib/prisma";
+import { startTaskScheduler, stopTaskScheduler } from "./lib/taskSchedulerJob";
 
 async function main() {
   await prisma.$connect();
   const app = createApp();
+
+  startTaskScheduler();
 
   const server = app.listen(env.PORT, () => {
     logger.info({ port: env.PORT, env: env.NODE_ENV }, "自然观察时间线 API 已启动");
@@ -13,6 +16,7 @@ async function main() {
 
   const shutdown = async (signal: string) => {
     logger.info({ signal }, "收到退出信号，正在关闭服务");
+    stopTaskScheduler();
     server.close(async () => {
       await prisma.$disconnect();
       process.exit(0);

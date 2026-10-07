@@ -20,6 +20,7 @@ import { shareLinkRouter, siteRouter } from "./modules/sites/router";
 import { phenophaseRouter, speciesRouter } from "./modules/species/router";
 import { statsRouter } from "./modules/stats/router";
 import { tagRouter } from "./modules/tags/router";
+import { taskRouter } from "./modules/tasks/router";
 
 const VARIANTS: StorageVariant[] = ["thumb", "display", "original"];
 
@@ -97,6 +98,7 @@ export function createApp() {
   app.use("/api/v1/stats", statsRouter);
   app.use("/api/v1/export", exportRouter);
   app.use("/api/v1/share", shareRouter);
+  app.use("/api/v1/tasks", taskRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);
