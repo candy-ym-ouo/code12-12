@@ -178,6 +178,62 @@ async function main() {
   const afterRevoke = await fetch(`${API}/share/${share.body?.data?.token}`);
   check("撤销分享链接后失效", revoke.status === 200 && afterRevoke.status === 404, `status=${afterRevoke.status}`);
 
+  // ---- 观察任务：窗口生成、幂等扫描、补录、历史、关闭 ----
+  const taskCreate = await call("/tasks", {
+    method: "POST",
+    token,
+    body: {
+      title: `冒烟巡查 ${Date.now()}`,
+      siteId,
+      speciesId,
+      phenophaseId: phase?.id,
+      kind: "PLANT_PHENOLOGY",
+      windowStart: "03-01",
+      windowEnd: "03-31",
+      timezone: "Asia/Shanghai",
+      reminderDays: 3,
+    },
+  });
+  check("创建观察任务并生成上一年/今年/下一年待办",
+    taskCreate.status === 201 && taskCreate.body?.data?.instances?.length === 3,
+    `status=${taskCreate.status}`);
+  const taskId = taskCreate.body?.data?.id;
+  const instanceYears = taskCreate.body?.data?.instances?.map((item) => item.year) ?? [];
+  const currentYear = new Date().getFullYear();
+  check("待办年份覆盖上一年/今年/下一年",
+    instanceYears.includes(currentYear - 1) && instanceYears.includes(currentYear) && instanceYears.includes(currentYear + 1),
+    `years=${instanceYears.join(",")}`);
+
+  const scanOnce = await call("/tasks/scan", { method: "POST", token, body: {} });
+  const scanTwice = await call("/tasks/scan", { method: "POST", token, body: {} });
+  check("重复扫描不产生第二条待办",
+    scanOnce.status === 200 && scanTwice.status === 200 &&
+      scanOnce.body?.data?.instancesCreated === 0 && scanTwice.body?.data?.instancesCreated === 0);
+
+  const currentInstance = taskCreate.body?.data?.instances?.find((item) => item.year === currentYear);
+  const backfill = await call(`/tasks/instances/${currentInstance?.id}/complete`, {
+    method: "POST",
+    token,
+    body: { observationDate: `${currentYear}-04-05` },
+  });
+  const backfilledInstance = backfill.body?.data?.instances?.find?.((item) => item.year === currentYear);
+  check("窗口结束后登记记为逾期补录并写入逾期天数",
+    backfill.status === 200 && backfilledInstance?.status === "BACKFILLED" && backfilledInstance?.completedDaysLate === 5,
+    `status=${backfill.status}`);
+
+  const events = await call(`/tasks/${taskId}/events`, { token });
+  const eventTypes = events.body?.data?.map((item) => item.type) ?? [];
+  check("创建与补录都留有历史",
+    events.status === 200 && eventTypes.includes("CREATED") && eventTypes.includes("BACKFILLED"),
+    `events=${eventTypes.join(",")}`);
+
+  const close = await call(`/tasks/${taskId}`, { method: "DELETE", token });
+  const closedList = await call("/tasks?status=CLOSED", { token });
+  check("关闭任务后可在已关闭列表查到且实例/历史保留",
+    close.status === 200 &&
+      closedList.body?.data?.some((item) => item.id === taskId && item.instances.length === 3),
+    `status=${close.status}`);
+
   console.log(`\n通过 ${passed} 项，失败 ${failures.length} 项`);
   if (failures.length) {
     console.log("失败项：");

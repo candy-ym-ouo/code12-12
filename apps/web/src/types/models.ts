@@ -167,6 +167,99 @@ export interface ShareLink {
   viewCount: number;
 }
 
+export type ObservationTaskStatus = "ACTIVE" | "CLOSED";
+
+export type TaskInstanceStatus = "PENDING" | "COMPLETED" | "BACKFILLED" | "SKIPPED";
+
+export type TaskEventType =
+  | "CREATED"
+  | "UPDATED"
+  | "REMINDER_SENT"
+  | "OVERDUE"
+  | "COMPLETED"
+  | "BACKFILLED"
+  | "CLOSED"
+  | "REOPENED"
+  | "SKIPPED";
+
+export interface TaskInstance {
+  id: string;
+  year: number;
+  windowStartDate: string;
+  windowEndDate: string;
+  reminderDate: string | null;
+  status: TaskInstanceStatus;
+  observationId: string | null;
+  completedAt: string | null;
+  completedDate: string | null;
+  completedDaysLate: number | null;
+  completionNote: string | null;
+  remindedAt: string | null;
+  overdueMarkedAt: string | null;
+  reopenedAt: string | null;
+  isOverdue: boolean;
+  reminderDue: boolean;
+  daysUntilStart: number;
+  daysUntilEnd: number;
+  today: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ObservationTask {
+  id: string;
+  title: string;
+  kind: ObservationKind;
+  site: { id: string; name: string };
+  species: { id: string; commonName: string; category: SpeciesCategory } | null;
+  phenophase: { id: string; name: string; color: string } | null;
+  windowStart: string;
+  windowEnd: string;
+  timezone: string;
+  reminderDays: number;
+  note: string | null;
+  status: ObservationTaskStatus;
+  closedAt: string | null;
+  eventCount: number;
+  instances: TaskInstance[];
+  summary: {
+    pending: number;
+    overdue: number;
+    completed: number;
+    backfilled: number;
+    skipped: number;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TaskEvent {
+  id: string;
+  type: TaskEventType;
+  instanceId: string | null;
+  detail: Record<string, unknown> | null;
+  createdAt: string;
+}
+
+export const TASK_EVENT_LABELS: Record<TaskEventType, string> = {
+  CREATED: "创建任务",
+  UPDATED: "修改任务",
+  REMINDER_SENT: "发送提醒",
+  OVERDUE: "标记逾期",
+  COMPLETED: "按时完成",
+  BACKFILLED: "逾期补录",
+  CLOSED: "关闭任务",
+  REOPENED: "重新打开",
+  SKIPPED: "跳过",
+};
+
+export const TASK_INSTANCE_STATUS_LABELS: Record<TaskInstanceStatus, string> = {
+  PENDING: "待观察",
+  COMPLETED: "已完成",
+  BACKFILLED: "逾期补录",
+  SKIPPED: "已跳过",
+};
+
 export const KIND_LABELS: Record<ObservationKind, string> = {
   PLANT_PHENOLOGY: "树木发芽",
   INSECT_SIGHTING: "昆虫出现",

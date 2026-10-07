@@ -32,6 +32,7 @@ const router = createRouter({
         { path: "observations/:id", name: "observation-detail", component: () => import("@/views/ObservationDetailView.vue") },
         { path: "observations/:id/edit", name: "observation-edit", component: () => import("@/views/ObservationEditView.vue") },
         { path: "sites", name: "sites", component: () => import("@/views/SitesView.vue") },
+        { path: "tasks", name: "tasks", component: () => import("@/views/TasksView.vue") },
         { path: "species", name: "species", component: () => import("@/views/SpeciesView.vue") },
         { path: "compare", name: "compare", component: () => import("@/views/CompareView.vue") },
         { path: "stats", name: "stats", component: () => import("@/views/StatsView.vue") },

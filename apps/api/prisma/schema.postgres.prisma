@@ -1,3 +1,5 @@
+// 该文件由 scripts/sync-postgres-schema.mjs 从 schema.prisma 生成，请勿手工编辑。
+// 生成命令：pnpm --filter @nature/api db:sync-schema
 // 自然观察时间线 · 数据模型
 // 开发与测试使用 SQLite；生产可切换到 PostgreSQL（见 schema.postgres.prisma）。
 // 枚举字段统一使用 String，避免两种数据库对 enum 的支持差异。
@@ -7,7 +9,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

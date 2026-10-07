@@ -3,12 +3,14 @@ import type {
   CompareResult,
   Observation,
   ObservationMeta,
+  ObservationTask,
   PhenologyResult,
   Phenophase,
   ShareLink,
   Site,
   Species,
   Tag,
+  TaskEvent,
   User,
 } from "@/types/models";
 
@@ -181,6 +183,57 @@ export const observationApi = {
   },
   async removePhoto(photoId: string) {
     await http.delete(`/photos/${photoId}`);
+  },
+};
+
+export const taskApi = {
+  async list(params: { status?: "ACTIVE" | "CLOSED" | "ALL"; siteId?: string } = {}) {
+    const { data } = await http.get<ApiList<ObservationTask>>("/tasks", { params });
+    return data.data;
+  },
+  async get(id: string) {
+    const { data } = await http.get<{ data: ObservationTask }>(`/tasks/${id}`);
+    return data.data;
+  },
+  async create(payload: Record<string, unknown>) {
+    const { data } = await http.post<{ data: ObservationTask }>("/tasks", payload);
+    return data.data;
+  },
+  async update(id: string, payload: Record<string, unknown>) {
+    const { data } = await http.patch<{ data: ObservationTask }>(`/tasks/${id}`, payload);
+    return data.data;
+  },
+  async close(id: string) {
+    await http.delete(`/tasks/${id}`);
+  },
+  async reopen(id: string) {
+    const { data } = await http.post<{ data: ObservationTask }>(`/tasks/${id}/reopen`, {});
+    return data.data;
+  },
+  async events(id: string) {
+    const { data } = await http.get<ApiList<TaskEvent>>(`/tasks/${id}/events`);
+    return data.data;
+  },
+  async scan() {
+    const { data } = await http.post<{ data: Record<string, number> }>("/tasks/scan", {});
+    return data.data;
+  },
+  async completeInstance(instanceId: string, payload: Record<string, unknown>) {
+    const { data } = await http.post<{ data: ObservationTask }>(
+      `/tasks/instances/${instanceId}/complete`,
+      payload,
+    );
+    return data.data;
+  },
+  async skipInstance(instanceId: string, reason?: string) {
+    const { data } = await http.post<{ data: ObservationTask }>(`/tasks/instances/${instanceId}/skip`, {
+      reason,
+    });
+    return data.data;
+  },
+  async reopenInstance(instanceId: string) {
+    const { data } = await http.post<{ data: ObservationTask }>(`/tasks/instances/${instanceId}/reopen`, {});
+    return data.data;
   },
 };
 

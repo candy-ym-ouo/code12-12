@@ -6,10 +6,12 @@ import { ArrowDown } from "@element-plus/icons-vue";
 import { useAuthStore } from "@/stores/auth";
 import { useSiteStore } from "@/stores/site";
 import { useSpeciesStore } from "@/stores/species";
+import { useTaskStore } from "@/stores/task";
 
 const auth = useAuthStore();
 const siteStore = useSiteStore();
 const speciesStore = useSpeciesStore();
+const taskStore = useTaskStore();
 const route = useRoute();
 const router = useRouter();
 
@@ -20,7 +22,7 @@ const activeNav = computed(() => {
 });
 
 onMounted(async () => {
-  await Promise.all([siteStore.fetch(), speciesStore.fetch()]);
+  await Promise.all([siteStore.fetch(), speciesStore.fetch(), taskStore.fetch("ACTIVE")]);
 });
 
 async function handleLogout() {
@@ -51,6 +53,10 @@ async function handleLogout() {
           </router-link>
           <router-link class="shell-nav__item" :class="{ 'is-active': activeNav === 'sites' }" to="/sites">
             地点
+          </router-link>
+          <router-link class="shell-nav__item shell-nav__item--badge" :class="{ 'is-active': activeNav === 'tasks' }" to="/tasks">
+            任务
+            <span v-if="taskStore.overdueCount > 0" class="nav-badge" aria-label="逾期待办数">{{ taskStore.overdueCount }}</span>
           </router-link>
           <router-link class="shell-nav__item" :class="{ 'is-active': activeNav === 'species' }" to="/species">
             物种
@@ -146,6 +152,25 @@ async function handleLogout() {
   background: var(--color-primary-soft);
   color: var(--color-primary);
   font-weight: 600;
+}
+
+.shell-nav__item--badge {
+  position: relative;
+}
+
+.nav-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  margin-left: 4px;
+  border-radius: 9px;
+  background: #b3261e;
+  color: #fff;
+  font-size: 11px;
+  line-height: 1;
 }
 
 @media (max-width: 767px) {

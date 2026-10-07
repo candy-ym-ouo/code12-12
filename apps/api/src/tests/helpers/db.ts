@@ -8,6 +8,9 @@ import sharp from "sharp";
 export const app = createApp();
 
 export async function resetDatabase(): Promise<void> {
+  await prisma.observationTaskEvent.deleteMany();
+  await prisma.observationTaskInstance.deleteMany();
+  await prisma.observationTask.deleteMany();
   await prisma.observationTag.deleteMany();
   await prisma.observationPhoto.deleteMany();
   await prisma.observation.deleteMany();
